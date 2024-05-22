@@ -1,11 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
 import { menuItemModel } from "../../../interfaces";
 import { Link } from "react-router-dom";
+import { useUpdateShoppingCartMutation } from "../../../apis/shoppingCartApi";
+import { MiniLoader } from "../Common";
 interface Props {
   menuItem: menuItemModel;
 }
 
 function MenuItemCard(props: Props) {
+  const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
+  const [updateShoppingCart] = useUpdateShoppingCartMutation();
+
+  const handleAddToCart = async (menuItemId: number) => {
+    setIsAddingToCart(true);
+
+    const response = await updateShoppingCart({
+      menuItemId: menuItemId,
+      updateQuantityBy: 1,
+      userId: "ef103d14-904a-4adc-b0f3-0593a253986b",
+    });
+    setIsAddingToCart(false);
+  };
   return (
     <div className="col-md-4 col-12 p-4">
       <div
@@ -41,18 +56,23 @@ function MenuItemCard(props: Props) {
               </i>
             )}
 
-          <i
-            className="bi bi-cart-plus btn btn-outline-danger"
-            style={{
-              position: "absolute",
-              top: "15px",
-              right: "15px",
-              padding: "5px 10px",
-              borderRadius: "3px",
-              outline: "none !important",
-              cursor: "pointer",
-            }}
-          ></i>
+          {isAddingToCart ? (
+            <MiniLoader />
+          ) : (
+            <i
+              className="bi bi-cart-plus btn btn-outline-danger"
+              style={{
+                position: "absolute",
+                top: "15px",
+                right: "15px",
+                padding: "5px 10px",
+                borderRadius: "3px",
+                outline: "none !important",
+                cursor: "pointer",
+              }}
+              onClick={() => handleAddToCart(props.menuItem.id)}
+            ></i>
+          )}
 
           <div className="text-center">
             <p className="card-title m-0 text-success fs-3">
