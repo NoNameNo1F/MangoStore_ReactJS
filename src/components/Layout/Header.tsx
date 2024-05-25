@@ -1,14 +1,29 @@
 import React from "react";
-import { useSelector } from "react-redux";
-import { NavLink } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { NavLink, useNavigate } from "react-router-dom";
 import { RootState } from "../../store/redux/store";
 import { cartItemModel } from "../../interfaces";
+import {
+  emptyUserState,
+  setLoggedInUser,
+} from "../../store/redux/userAuthSlice";
+
 let logo = require("../../assets/images/mango.png");
 function Header() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const shoppingCartFromStore: cartItemModel[] = useSelector(
     (state: RootState) => state.shoppingCartStore.cartItems ?? []
   );
 
+  const userData = useSelector((state: RootState) => state.userAuthStore);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    dispatch(setLoggedInUser({ ...emptyUserState }));
+    navigate("/");
+    };
   return (
     <div>
       <nav className="navbar navbar-expand-lg bg-dark navbar-dark">
@@ -41,9 +56,7 @@ function Header() {
                   aria-current="page"
                 >
                   <i className="bi bi-cart">Shopping Cart</i>
-                  {shoppingCartFromStore?.length
-                    ? `(${shoppingCartFromStore.length})`
-                    : ""}
+                  {userData.id && `(${shoppingCartFromStore?.length})`}
                 </NavLink>
               </li>
               <li className="nav-item dropdown">
@@ -78,28 +91,57 @@ function Header() {
                 </ul>
               </li>
               <div className="d-flex" style={{ marginLeft: "auto" }}>
-                <li className="nav-item">
-                  <button
-                    className="btn btn-success btn-outlined rounded-pill text-white mx-2"
-                    style={{ border: "none", height: "40px", width: "100px" }}
-                  >
-                    Logout
-                  </button>
-                </li>
-                <li className="nav-item text-white">
-                  <NavLink className="nav-link" to="/register">
-                    Register
-                  </NavLink>
-                </li>
-                <li className="nav-item text-white">
-                  <NavLink
-                    className="btn btn-success btn-outlined rounded-pill text-white mx-2"
-                    to="/login"
-                    style={{ border: "none", height: "40px", width: "100px" }}
-                  >
-                    Login
-                  </NavLink>
-                </li>
+                {userData.id && (
+                  <>
+                    <li className="nav-item">
+                      <button
+                        className="nav-link active"
+                        style={{
+                          cursor: "pointer",
+                          background: "transparent",
+                          border: 0,
+                        }}
+                      >
+                        Welcome, {userData.fullName}{" "}
+                      </button>
+                    </li>
+                    <li className="nav-item">
+                      <button
+                        className="btn btn-success btn-outlined rounded-pill text-white mx-2"
+                        style={{
+                          border: "none",
+                          height: "40px",
+                          width: "100px",
+                        }}
+                        onClick={handleLogout}
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </>
+                )}
+                {!userData.id && (
+                  <>
+                    <li className="nav-item text-white">
+                      <NavLink className="nav-link" to="/register">
+                        Register
+                      </NavLink>
+                    </li>
+                    <li className="nav-item text-white">
+                      <NavLink
+                        className="btn btn-success btn-outlined rounded-pill text-white mx-2"
+                        to="/login"
+                        style={{
+                          border: "none",
+                          height: "40px",
+                          width: "100px",
+                        }}
+                      >
+                        Login
+                      </NavLink>
+                    </li>
+                  </>
+                )}
               </div>
             </ul>
             <form className="d-flex" role="search">
