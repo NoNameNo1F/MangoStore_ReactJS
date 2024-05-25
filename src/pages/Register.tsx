@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { SD_Roles } from "../utils/SD";
-import { inputHelper } from "../helpers";
+import { inputHelper, toastNotify } from "../helpers";
 import { useRegisterUserMutation } from "../apis/authApi";
 import { apiResponse } from "../interfaces";
-
+import { useNavigate } from "react-router-dom";
+import { MainLoader } from "../components/page/Common";
 function Register() {
   const [registerUser] = useRegisterUserMutation();
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ function Register() {
     const tempData = inputHelper(e, userInput);
     setUserInput(tempData);
   };
-
+  const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -31,11 +32,11 @@ function Register() {
       name: userInput.name,
     });
 
-    console.log(response.data);
     if (response.data) {
-      console.log(response.data);
+      toastNotify("Registeration successful! Please login to countinue.");
+      navigate("/login");
     } else if (response.error) {
-      console.log(response.error.data.errorMessages[0]);
+      toastNotify(response.error.data.errorMessages[0], "error");
     }
 
     setLoading(false);
@@ -43,6 +44,7 @@ function Register() {
 
   return (
     <div className="container text-center">
+      {loading && <MainLoader />}
       <form method="post" onSubmit={handleSubmit}>
         <h1 className="mt-5">Register</h1>
         <div className="mt-5">
@@ -94,7 +96,7 @@ function Register() {
           </div>
         </div>
         <div className="mt-5">
-          <button type="submit" className="btn btn-success">
+          <button type="submit" className="btn btn-success" disabled={loading}>
             Register
           </button>
         </div>
